@@ -4,40 +4,40 @@ import pathlib
 import glob
 import pandas as pd
 import numpy as np
-from countrylist import euls,euplusls,noneuls,allcountryls
+from countrylist import euls,euplusls,noneuls,allcountryls, allcountryls_missing
 
 land_transition_matrix_sheet = 'Table4.1'
 #Rows for FROM Land Use Class in Table4.1
 from_ls = ["Forest land \(managed\)","Forest land \(unmanaged\)","Cropland","Grassland \(managed\)","Grassland \(unmanaged\)",
            "Wetlands \(managed","Wetlands \(unmanaged\)","Settlements","Other land"]
 #Result sheet names for Land use change classes
-sheet_name_dict = {0:['FL(manag.)->FL(manag.)','FL(manag.)->FL(unmanag.)','FL(manag.)->CL',
-                      'FL(manag.)->GL(manag.)','FL(manag.)->GL(unmanag.)','FL(manag.)->WL(manag.)','FL(manag.)->WL(unmanag.)',
-                      'FL(manag.)->SL','FL(manag.)->OL'],
-                   1:['FL(unmanag.)->FL(manag.)','FL(unmanag.)->FL(unmanag.)','FL(unmanag.)->CL',
-                      'FL(unmanag.)->GL(manag.)','FL(unmanag.)->GL(unmanag.)','FL(unmanag.)->WL(manag.)','FL(unmanag.)->WL(unmanag.)',
-                      'FL(unmanag.)->SL','FL(unmanag.)->OL'],
-                   2:['CL->FL(manag.)','CL->FL(unmanag.)','CL->CL',
-                      'CL->GL(manag.)','CL->GL(unmanag.)','CL->WL(manag.)','CL->WL(unmanag.)',
-                      'CL->SL','CL->OL'],
-                   3:['GL(manag.)->FL(manag.)','GL(manag.)->FL(unmanag.)','GL(manag.)->CL',
-                      'GL(manag.)->GL(manag.)','GL(manag.)->GL(unmanag.)','GL(manag.)->WL(manag.)','GL(manag.)->WL(unmanag.)',
-                      'GL(manag.)->SL','GL(manag.)->OL'],
-                   4:['GL(unmanag.)->FL(manag.)','GL(unmanag.)->FL(unmanag.)','GL(unmanag.)->CL',
-                      'GL(unmanag.)->GL(manag.)','GL(unmanag.)->GL(unmanag.)','GL(unmanag.)->WL(manag.)','GL(unmanag.)->WL(unmanag.)',
-                      'GL(unmanag.)->SL','GL(unmanag.)->OL'],
-                   5:['WL(manag.)->FL(manag.)','WL(manag.)->FL(unmanag.)','WL(manag.)->CL',
-                      'WL(manag.)->GL(manag.)','WL(manag.)->GL(unmanag.)','WL(manag.)->WL(manag.)','WL(manag.)->WL(unmanag.)',
-                      'WL(manag.)->SL','WL(manag.)->OL'],
-                   6:['WL(unmanag.)->FL(manag.)','WL(unmanag.)->FL(unmanag.)','WL(unmanag.)->CL',
-                      'WL(unmanag.)->GL(manag.)','WL(unmanag.)->GL(unmanag.)','WL(unmanag.)->WL(manag.)','WL(unmanag.)->WL(unmanag.)',
-                      'WL(unmanag.)->SL','WL(unmanag.)->OL'],
-                   7:['SL->FL(manag.)','SL->FL(unmanag.)','SL->CL',
-                      'SL->GL(manag.)','SL->GL(unmanag.)','SL->WL(manag.)','SL->WL(unmanag.)',
-                      'SL->SL','SL->OL'],
-                   8:['OL->FL(manag.)','OL->FL(unmanag.)','OL->CL',
-                      'OL->GL(manag.)','OL->GL(unmanag.)','OL->WL(manag.)','OL->WL(unmanag.)',
-                      'OL->SL','OL->OL']
+sheet_name_dict = {0:[r'FL(manag.)->FL(manag.)',r'FL(manag.)->FL(unmanag.)',r'FL(manag.)->CL',
+                      r'FL(manag.)->GL(manag.)',r'FL(manag.)->GL(unmanag.)',r'FL(manag.)->WL(manag.)',r'FL(manag.)->WL(unmanag.)',
+                      r'FL(manag.)->SL',r'FL(manag.)->OL'],
+                   1:[r'FL(unmanag.)->FL(manag.)',r'FL(unmanag.)->FL(unmanag.)',r'FL(unmanag.)->CL',
+                      r'FL(unmanag.)->GL(manag.)',r'FL(unmanag.)->GL(unmanag.)',r'FL(unmanag.)->WL(manag.)',r'FL(unmanag.)->WL(unmanag.)',
+                      r'FL(unmanag.)->SL',r'FL(unmanag.)->OL'],
+                   2:[r'CL->FL(manag.)',r'CL->FL(unmanag.)',r'CL->CL',
+                      r'CL->GL(manag.)',r'CL->GL(unmanag.)',r'CL->WL(manag.)',r'CL->WL(unmanag.)',
+                      r'CL->SL',r'CL->OL'],
+                   3:[r'GL(manag.)->FL(manag.)',r'GL(manag.)->FL(unmanag.)',r'GL(manag.)->CL',
+                      r'GL(manag.)->GL(manag.)',r'GL(manag.)->GL(unmanag.)',r'GL(manag.)->WL(manag.)',r'GL(manag.)->WL(unmanag.)',
+                      r'GL(manag.)->SL',r'GL(manag.)->OL'],
+                   4:[r'GL(unmanag.)->FL(manag.)',r'GL(unmanag.)->FL(unmanag.)',r'GL(unmanag.)->CL',
+                      r'GL(unmanag.)->GL(manag.)',r'GL(unmanag.)->GL(unmanag.)',r'GL(unmanag.)->WL(manag.)',r'GL(unmanag.)->WL(unmanag.)',
+                      r'GL(unmanag.)->SL',r'GL(unmanag.)->OL'],
+                   5:[r'WL(manag.)->FL(manag.)',r'WL(manag.)->FL(unmanag.)',r'WL(manag.)->CL',
+                      r'WL(manag.)->GL(manag.)',r'WL(manag.)->GL(unmanag.)',r'WL(manag.)->WL(manag.)',r'WL(manag.)->WL(unmanag.)',
+                      r'WL(manag.)->SL',r'WL(manag.)->OL'],
+                   6:[r'WL(unmanag.)->FL(manag.)',r'WL(unmanag.)->FL(unmanag.)',r'WL(unmanag.)->CL',
+                      r'WL(unmanag.)->GL(manag.)',r'WL(unmanag.)->GL(unmanag.)',r'WL(unmanag.)->WL(manag.)',r'WL(unmanag.)->WL(unmanag.)',
+                      r'WL(unmanag.)->SL',r'WL(unmanag.)->OL'],
+                   7:[r'SL->FL(manag.)',r'SL->FL(unmanag.)',r'SL->CL',
+                      r'SL->GL(manag.)',r'SL->GL(unmanag.)',r'SL->WL(manag.)',r'SL->WL(unmanag.)',
+                      r'SL->SL',r'SL->OL'],
+                   8:[r'OL->FL(manag.)',r'OL->FL(unmanag.)',r'OL->CL',
+                      r'OL->GL(manag.)',r'OL->GL(unmanag.)',r'OL->WL(manag.)',r'OL->WL(unmanag.)',
+                      r'OL->SL',r'OL->OL']
                    }
 
 def CreateLandTransitionMatrix(writer,directory,countryls,sheet:str,sheet_name:str,from_row:str,to_col:int,start:int,end:int):
@@ -60,14 +60,25 @@ def CreateLandTransitionMatrix(writer,directory,countryls,sheet:str,sheet_name:s
         rowls=[]
         #List all excel files and sort the files in ascending order (1990,1991,...,2021)
         #Exclude years in 1980's that some countries report
-        excelfilels=list(set(glob.glob(directory+'/'+country+'/*.xlsx'))-set(glob.glob(directory+'/'+country+'/*_198??*.xlsx')))
-        excelfilels=sorted(excelfilels)
+        # excelfilels=list(set(glob.glob(directory+'/'+country+'/*.xlsx'))-set(glob.glob(directory+'/'+country+'/*_198??*.xlsx')))
+        # excelfilels=sorted(excelfilels)
+
+        # MOD: 2024 require that the filename starts with letter A-Z or a-z
+        excelfilels = list(set(glob.glob(directory+'/'+country+'/[A-z]*.xlsx'))-set(
+            glob.glob(directory+'/'+country+'/*[_,-]198??*.xlsx')))
+        excelfilels = sorted(excelfilels)
         print(country,sheet_name)
+        # print(excelfilels)
+        i = start
         for file in excelfilels:
+            print(file)
+            if i>end:
+                break
             xlsx = pd.ExcelFile(file)
-            df = pd.read_excel(xlsx,sheet,keep_default_na=False,na_values=[''])
+            df = pd.read_excel(xlsx,sheet,keep_default_na=False,na_values=[''], header=7, usecols='B:M')
             row = df[df[df.columns[0]].str.contains(from_row)==True]
             rowls.append(row.iloc[0,to_col])
+            i = i+1
         datarowlss.append(rowls)
     dftotal = pd.DataFrame(datarowlss)
     dftotal.index = countryls
@@ -86,6 +97,8 @@ if __name__ == "__main__":
     group.add_argument("-c","--countries",dest="country",type=str,nargs='+',help="List of countries")
     group.add_argument("-l","--list",action="store_true",dest="countryls",default=False,
                        help="List files in Inventory Parties Directory")
+    group.add_argument("--amissing", action="store_true", dest="all_missing", default=False,
+                    help='All countries where some are missing. See allcountryls_missing in countrylist.py')
               
     args = parser.parse_args()
     directory=args.f1
@@ -112,6 +125,10 @@ if __name__ == "__main__":
         countryls = [pathlib.Path(x).name for x in ls]
         countryls.sort()
         file_prefix = pathlib.Path(args.f1).name
+    elif args.all_missing:
+        print("Using allcountry list missing")
+        countryls = allcountryls_missing
+        file_prefix = 'all_countries_some_missing'
     else:
         print("Using countries", args.country) 
         countryls=args.country
