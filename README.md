@@ -1,6 +1,6 @@
 # UNFCCC greenhouse gas inventory analysis
 
-This repository is a reproducibility package for results in Böttcher et al., (2026) currently submitted to []. 
+This repository is a reproducibility package for results in Böttcher et al., (2026) currently in review. 
 
 ## File description
 
